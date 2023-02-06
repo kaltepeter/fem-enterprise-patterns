@@ -76,12 +76,12 @@ describe('HomeComponent', () => {
   });
 
   it('should update a widget on updateWidget', () => {
-    let widgets = [
-      { id: 100, name: 'new item', description: 'new item', price: 100 },
+    let widgets: Widget[] = [
+      { id: '100', title: 'new item', description: 'new item', price: 100 },
     ];
-    const widget = {
-      id: 100,
-      name: 'UPDATED',
+    const widget: Widget = {
+      id: '100',
+      title: 'UPDATED',
       description: 'WIDGET',
       price: 100,
     };
