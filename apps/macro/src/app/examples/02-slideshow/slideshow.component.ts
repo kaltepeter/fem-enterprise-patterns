@@ -1,6 +1,6 @@
 import { Component, ViewChild, AfterViewInit } from '@angular/core';
 import { fromEvent, merge } from 'rxjs';
-import { map, scan, startWith } from 'rxjs/operators';
+import { map, scan, startWith, tap } from 'rxjs/operators';
 import { slideshowAnimation } from './slideshow.animations';
 
 const images: string[] = [
@@ -49,6 +49,18 @@ export class SlideshowComponent implements AfterViewInit {
     // Pass an object that looks like this { shift: -1, direction: Direction.right }
     // Combine both streams to update the same slideshow
     // -------------------------------------------------------------------
+    const prev$ = fromEvent(this.getNativeElement(this.previous), 'click').pipe(
+      map(() => ({ shift: -1, direction: Direction.left }))
+    );
+    const next$ = fromEvent(this.getNativeElement(this.next), 'click').pipe(
+      map(() => ({ shift: 1, direction: Direction.right }))
+    );
+    merge(prev$, next$).pipe(
+      map((move: Move) => ({
+        index: this.getAdjustedIndex(this.currentPosition.index, move.shift),
+        direction: move.direction
+      })),
+    ).subscribe((res) => this.currentPosition = res);
   }
 
   getAdjustedIndex(current, shift) {

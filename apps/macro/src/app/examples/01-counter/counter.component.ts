@@ -1,6 +1,6 @@
 import { Component, ViewChild, AfterViewInit } from '@angular/core';
 import { fromEvent } from 'rxjs/index';
-import { scan, startWith } from 'rxjs/operators';
+import { scan, startWith, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-counter',
@@ -43,6 +43,10 @@ export class CounterComponent implements AfterViewInit {
     // -------------------------------------------------------------------
     // Capture the btn click and increment count by 1
     // -------------------------------------------------------------------
+    fromEvent(this.getNativeElement(this.btn), 'click')
+    .pipe(
+      tap(() => this.count++)
+    ).subscribe();
   }
 
   getNativeElement(element) {

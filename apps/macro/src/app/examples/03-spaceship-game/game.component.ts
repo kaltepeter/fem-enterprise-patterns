@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { fromEvent, interval, merge } from 'rxjs';
-import { filter, map, mapTo, repeat, scan, startWith, take } from 'rxjs/operators';
+import { filter, map, mapTo, repeat, scan, startWith, take, tap } from 'rxjs/operators';
 
 const SPACESHIP_WIDTH_OFFSET = 40;
 const BG_START = 1100;
@@ -84,22 +84,25 @@ export class GameComponent implements OnInit, OnDestroy {
     // Complete the rightArrow$ stream to pass the appropriate value
     // Add a scan function to act on the stream data in the merge operator
     // -------------------------------------------------------------------
-    this.leftArrow$ = fromEvent(document, 'keydown')
+    this.leftArrow$ = fromEvent<KeyboardEvent>(document, 'keydown')
       .pipe(
-        // SOMETHING GOES HERE!
+        filter(e => e.key  === 'ArrowLeft'),
+        map(e => this.decrement(this.shipPosition, 'x', 10))
       );
 
-    this.rightArrow$ = fromEvent(document, 'keydown')
+    this.rightArrow$ = fromEvent<KeyboardEvent>(document, 'keydown')
       .pipe(
-        // SOMETHING GOES HERE!
+        filter(e => e.key  === 'ArrowRight'),
+        map(e => this.increment(this.shipPosition, 'x', 10))
       );
 
     merge(this.leftArrow$, this.rightArrow$)
       .pipe(
         startWith(this.shipPosition),
-        // SOMETHING GOES HERE!
+       filter((position: Coordinate) => position.x >= 0 && position.x <= 360 - SPACESHIP_WIDTH_OFFSET),
+        scan((acc, curr) => curr, this.shipPosition)
       )
-      .subscribe(position => this.shipPosition = position);
+      .subscribe(position => this.shipPosition = position as Coordinate);
   }
 
   ngOnDestroy() {

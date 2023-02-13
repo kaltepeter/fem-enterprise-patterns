@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { fromEvent } from 'rxjs';
-import { map, pairwise } from 'rxjs/operators';
+import { bufferCount, map, pairwise, scan, tap } from 'rxjs/operators';
 import * as $ from 'jquery';
 
 interface Line {
@@ -32,17 +32,18 @@ interface Line {
     }
   `],
   template: `
-    <div class="card-container">
+    <div class="card-container" #map>
       <mat-card>
         <app-line *ngFor="let line of lines" [line]="line"></app-line>
       </mat-card>
     </div>
   `
 })
-export class MapComponent implements OnInit {
+export class MapComponent implements AfterViewInit {
+  @ViewChild('map') map;
   lines: Line[] = [];
 
-  ngOnInit() {
+  ngAfterViewInit() {
     // -------------------------------------------------------------------
     // CHALLENGE: Map your route / Map your getaway
     // -------------------------------------------------------------------
@@ -51,6 +52,15 @@ export class MapComponent implements OnInit {
     // Update the stream to accommodate fluid lines
     // Helper functions have been given to help keep you focused
     // -------------------------------------------------------------------
+    const draw$ = fromEvent(this.getNativeElement(this.map), 'click').pipe(
+      map((e: MouseEvent) => this.generatePosition(e)),
+      bufferCount(2)
+    );
+    draw$.pipe(
+      map(([pos1, pos2]) => this.generateCoordinates(pos1, pos2)),
+    ).subscribe(
+      (line: Line) => this.lines = [...this.lines, line]
+    );
   }
 
   generatePosition(e: MouseEvent) {
@@ -63,5 +73,9 @@ export class MapComponent implements OnInit {
 
   generateCoordinates(start, end): Line {
     return { x1: start.x, y1: start.y, x2: end.x, y2: end.y };
+  }
+
+  getNativeElement(element) {
+    return element.nativeElement;
   }
 }
